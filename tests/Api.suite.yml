@@ -2,10 +2,12 @@ actor: ApiTester
 modules:
     enabled:
         - REST:
-            url: http://localhost:8000
+            url: http://host.docker.internal:8000
+            # url: http://localhost:8000 - use it for non-apple systems
             depends: PhpBrowser
         - Asserts
         - Tests\Support\Helper\FileHelper
     config:
         PhpBrowser:
-            url: http://localhost:8000
+            url: http://host.docker.internal:8000
+            # url: http://localhost:8000 - use for non-apple systems
