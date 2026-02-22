@@ -41,7 +41,7 @@ class EventApiCest
         $I->sendPOST('/event', [
             'type' => 'foul',
             'player' => 'William Saliba',
-                'minute' => 45,
+            'minute' => 45,
             'second' => 34
             // Missing team_id and match_id
         ]);
