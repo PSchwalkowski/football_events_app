@@ -19,10 +19,11 @@ class EventApiCest
         $I->sendPOST('/event', [
             'type' => 'foul',
             'player' => 'William Saliba',
+            'affected_player' => 'John Doe',
             'team_id' => 'arsenal',
             'match_id' => 'm1',
             'minute' => 45,
-            'second' => 34
+            'second' => 34,
         ]);
         
         $I->seeResponseCodeIs(201);
@@ -48,7 +49,7 @@ class EventApiCest
         $I->seeResponseCodeIs(400);
         $I->seeResponseIsJson();
         $I->seeResponseContainsJson([
-            'error' => 'Fields match_id, team_id are required for this event',
+            'error' => 'Fields player, affected_player, minute, second, team_id, match_id are required for this event',
         ]);
     }
 
@@ -76,7 +77,7 @@ class EventApiCest
         $I->seeResponseCodeIs(400);
         $I->seeResponseIsJson();
         $I->seeResponseContainsJson([
-            'error' => 'Event type is required'
+            'error' => 'Fields type are required for this event'
         ]);
     }
 
