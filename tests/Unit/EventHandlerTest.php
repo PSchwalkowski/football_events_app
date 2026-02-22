@@ -32,7 +32,8 @@ class EventHandlerTest extends TestCase
     
     public function testHandleGoalEvent(): void
     {
-        $handler = new EventHandler($this->testFile);
+        $statisticsManager = new StatisticsManager($this->testStatsFile);
+        $handler = new EventHandler($this->testFile, $statisticsManager);
         
         $eventData = [
             'type' => 'goal',
