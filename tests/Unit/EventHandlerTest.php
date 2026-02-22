@@ -5,6 +5,7 @@ namespace Tests;
 use App\EventHandler;
 use App\FileStorage;
 use App\StatisticsManager;
+use PHPUnit\Framework\Attributes\TestWith;
 use PHPUnit\Framework\TestCase;
 
 class EventHandlerTest extends TestCase
@@ -36,14 +37,46 @@ class EventHandlerTest extends TestCase
             'type' => 'goal',
             'player' => 'John Doe',
             'minute' => 23,
-            'second' => 34
+            'second' => 34,
+            'team_id' => 'team_a',
+            'match_id' => 'match_1',
+            'assisting_player' => 'John Smith',
         ];
-        
+
         $result = $handler->handleEvent($eventData);
         
         $this->assertEquals('success', $result['status']);
         $this->assertEquals('goal', $result['event']['type']);
         $this->assertArrayHasKey('timestamp', $result['event']);
+    }
+
+    #[TestWith(['player'])]
+    #[TestWith(['minute'])]
+    #[TestWith(['second'])]
+    #[TestWith(['team_id'])]
+    #[TestWith(['match_id'])]
+    #[TestWith(['assisting_player'])]
+    public function testHandleGoalEventWithoutRequiredFields(string $fieldToHide): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Fields player, minute, second, team_id, match_id, assisting_player required for goal events');
+
+        $statisticsManager = new StatisticsManager($this->testStatsFile);
+        $handler = new EventHandler($this->testFile, $statisticsManager);
+
+        $eventData = [
+            'type' => 'goal',
+            'player' => 'John Doe',
+            'minute' => 23,
+            'second' => 34,
+            'team_id' => 'team_a',
+            'match_id' => 'match_1',
+            'assisting_player' => 'John Smith',
+        ];
+
+        unset($eventData[$fieldToHide]);
+
+        $handler->handleEvent($eventData);
     }
     
     public function testHandleEventWithoutType(): void

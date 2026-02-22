@@ -2,6 +2,8 @@
 
 namespace App;
 
+use InvalidArgumentException;
+
 class EventHandler
 {
     private FileStorage $storage;
@@ -16,7 +18,7 @@ class EventHandler
     public function handleEvent(array $data): array
     {
         if (!isset($data['type'])) {
-            throw new \InvalidArgumentException('Event type is required');
+            throw new InvalidArgumentException('Event type is required');
         }
         
         $event = [
@@ -30,7 +32,7 @@ class EventHandler
         // Update statistics for foul events
         if ($data['type'] === 'foul') {
             if (!isset($data['match_id']) || !isset($data['team_id'])) {
-                throw new \InvalidArgumentException('match_id and team_id are required for foul events');
+                throw new InvalidArgumentException('match_id and team_id are required for foul events');
             }
             
             $this->statisticsManager->updateTeamStatistics(
@@ -38,6 +40,30 @@ class EventHandler
                 $data['team_id'],
                 'fouls'
             );
+        } elseif ($data['type'] === 'goal') {
+            $requiredFields = [
+                'player',
+                'minute',
+                'second',
+                'team_id',
+                'match_id',
+                'assisting_player',
+            ];
+            // TODO: Move validation in separate place
+            $hasValidationError = false;
+            foreach ($requiredFields as $field) {
+                if (!isset($data[$field])) {
+                    $hasValidationError = true;
+                    break;
+                }
+            }
+
+            if ($hasValidationError) {
+                throw new InvalidArgumentException(sprintf(
+                    'Fields %s required for goal events',
+                    implode(', ', $requiredFields)
+                ));
+            }
         }
         
         return [
