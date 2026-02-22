@@ -111,7 +111,7 @@ class EventHandlerTest extends TestCase
     public function testHandleEventWithoutType(): void
     {
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Event type is required');
+        $this->expectExceptionMessage('Fields type are required for this event');
         
         $handler = new EventHandler($this->testFile);
         
@@ -149,6 +149,7 @@ class EventHandlerTest extends TestCase
         $eventData = [
             'type' => 'foul',
             'player' => 'William Saliba',
+            'affected_player' => 'John Doe',
             'team_id' => 'arsenal',
             'match_id' => 'm1',
             'minute' => 45,
@@ -166,7 +167,7 @@ class EventHandlerTest extends TestCase
         $this->assertArrayHasKey('fouls', $teamStats);
         $this->assertEquals(1, $teamStats['fouls']);
     }
-    
+
     public function testHandleMultipleFoulEventsIncrementsStatistics(): void
     {
         $statisticsManager = new StatisticsManager($this->testStatsFile);
@@ -174,7 +175,8 @@ class EventHandlerTest extends TestCase
         
         $eventData1 = [
             'type' => 'foul',
-            'player' => 'John Doe',
+            'player' => 'William Saliba',
+            'affected_player' => 'John Doe',
             'team_id' => 'team_a',
             'match_id' => 'match_1',
             'minute' => 15,
@@ -184,6 +186,7 @@ class EventHandlerTest extends TestCase
         $eventData2 = [
             'type' => 'foul',
             'player' => 'Jane Smith',
+            'affected_player' => 'John Doe',
             'team_id' => 'team_a',
             'match_id' => 'match_1',
             'minute' => 30,
@@ -197,22 +200,33 @@ class EventHandlerTest extends TestCase
         $teamStats = $statisticsManager->getTeamStatistics('match_1', 'team_a');
         $this->assertEquals(2, $teamStats['fouls']);
     }
-    
-    public function testHandleFoulEventWithoutRequiredFields(): void
+
+    #[TestWith(['player'])]
+    #[TestWith(['minute'])]
+    #[TestWith(['second'])]
+    #[TestWith(['team_id'])]
+    #[TestWith(['match_id'])]
+    #[TestWith(['assisting_player'])]
+    public function testHandleFoulEventWithoutRequiredFields(string $fieldToHide): void
     {
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Fields match_id, team_id are required for this event');
+        $this->expectExceptionMessage(
+            'Fields player, affected_player, minute, second, team_id, match_id are required for this event'
+        );
 
         $statisticsManager = new StatisticsManager($this->testStatsFile);
         $handler = new EventHandler($this->testFile, $statisticsManager);
         
         $eventData = [
             'type' => 'foul',
-            'player' => 'John Doe',
+            'player' => 'William Saliba',
+            'affected_player' => 'John Doe',
             'minute' => 45,
             'second' => 34
             // Missing match_id and team_id
         ];
+
+        unset($eventData[$fieldToHide]);
         
         $handler->handleEvent($eventData);
     }

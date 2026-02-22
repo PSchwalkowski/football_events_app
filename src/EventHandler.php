@@ -17,40 +17,24 @@ class EventHandler
     
     public function handleEvent(array $data): array
     {
-        if (!isset($data['type'])) {
-            throw new InvalidArgumentException('Event type is required');
-        }
+        $this->validateEvent($data);
         
         $event = [
             'type' => $data['type'],
             'timestamp' => time(),
-            'data' => $data
+            'data' => $data,
         ];
         
         $this->storage->save($event);
         
         // Update statistics for foul events
         if ($data['type'] === 'foul') {
-            $this->validate($data, [
-                'match_id',
-                'team_id',
-            ]);
-            
             $this->statisticsManager->updateTeamStatistics(
                 $data['match_id'],
                 $data['team_id'],
                 'fouls'
             );
         } elseif ($data['type'] === 'goal') {
-            $this->validate($data, [
-                'player',
-                'minute',
-                'second',
-                'team_id',
-                'match_id',
-                'assisting_player',
-            ]);
-
             $this->statisticsManager->updateTeamStatistics(
                 $data['match_id'],
                 $data['team_id'],
@@ -80,6 +64,38 @@ class EventHandler
                 'Fields %s are required for this event',
                 implode(', ', $requiredFields)
             ));
+        }
+    }
+
+    private function validateEvent(array $data): void
+    {
+        $this->validate($data, ['type']);
+
+        switch ($data['type']) {
+            case 'foul':
+                $this->validate($data, [
+                    'player',
+                    'affected_player',
+                    'minute',
+                    'second',
+                    'team_id',
+                    'match_id',
+                ]);
+                break;
+
+            case 'goal':
+                $this->validate($data, [
+                    'player',
+                    'minute',
+                    'second',
+                    'team_id',
+                    'match_id',
+                    'assisting_player',
+                ]);
+                break;
+
+            default:
+                break;
         }
     }
 }
