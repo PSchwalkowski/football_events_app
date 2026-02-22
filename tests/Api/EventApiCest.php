@@ -100,7 +100,7 @@ class EventApiCest
             'status' => 'success',
             'message' => 'Event saved successfully'
         ]);
-        $I->seeResponseJsonMatchesJsonPath('$.event.type', 'foul');
+        $I->seeResponseJsonMatchesJsonPath('$.event.type', 'goal');
     }
 
     public function testGoalEventWithoutRequiredFields(ApiTester $I)
