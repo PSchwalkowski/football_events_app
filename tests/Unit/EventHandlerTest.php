@@ -93,10 +93,15 @@ class EventHandlerTest extends TestCase
     {
         $storage = new FileStorage($this->testFile);
         $handler = new EventHandler($this->testFile);
-        
+
         $eventData = [
             'type' => 'goal',
-            'player' => 'Jane Smith'
+            'player' => 'Jane Smith',
+            'minute' => 23,
+            'second' => 34,
+            'team_id' => 'team_a',
+            'match_id' => 'match_1',
+            'assisting_player' => 'John Smith',
         ];
         
         $handler->handleEvent($eventData);
