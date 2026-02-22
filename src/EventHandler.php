@@ -31,9 +31,10 @@ class EventHandler
         
         // Update statistics for foul events
         if ($data['type'] === 'foul') {
-            if (!isset($data['match_id']) || !isset($data['team_id'])) {
-                throw new InvalidArgumentException('match_id and team_id are required for foul events');
-            }
+            $this->validate($data, [
+                'match_id',
+                'team_id',
+            ]);
             
             $this->statisticsManager->updateTeamStatistics(
                 $data['match_id'],
@@ -41,29 +42,14 @@ class EventHandler
                 'fouls'
             );
         } elseif ($data['type'] === 'goal') {
-            $requiredFields = [
+            $this->validate($data, [
                 'player',
                 'minute',
                 'second',
                 'team_id',
                 'match_id',
                 'assisting_player',
-            ];
-            // TODO: Move validation in separate place
-            $hasValidationError = false;
-            foreach ($requiredFields as $field) {
-                if (!isset($data[$field])) {
-                    $hasValidationError = true;
-                    break;
-                }
-            }
-
-            if ($hasValidationError) {
-                throw new InvalidArgumentException(sprintf(
-                    'Fields %s required for goal events',
-                    implode(', ', $requiredFields)
-                ));
-            }
+            ]);
 
             $this->statisticsManager->updateTeamStatistics(
                 $data['match_id'],
@@ -77,5 +63,23 @@ class EventHandler
             'message' => 'Event saved successfully',
             'event' => $event
         ];
+    }
+
+    private function validate(array $data, array $requiredFields): void
+    {
+        $hasValidationError = false;
+        foreach ($requiredFields as $field) {
+            if (!isset($data[$field])) {
+                $hasValidationError = true;
+                break;
+            }
+        }
+
+        if ($hasValidationError) {
+            throw new InvalidArgumentException(sprintf(
+                'Fields %s are required for this event',
+                implode(', ', $requiredFields)
+            ));
+        }
     }
 }

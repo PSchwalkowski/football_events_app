@@ -48,7 +48,7 @@ class EventApiCest
         $I->seeResponseCodeIs(400);
         $I->seeResponseIsJson();
         $I->seeResponseContainsJson([
-            'error' => 'match_id and team_id are required for foul events'
+            'error' => 'Fields match_id, team_id are required for this event',
         ]);
     }
 
@@ -77,6 +77,48 @@ class EventApiCest
         $I->seeResponseIsJson();
         $I->seeResponseContainsJson([
             'error' => 'Event type is required'
+        ]);
+    }
+
+    public function testGoalEvent(ApiTester $I)
+    {
+        $I->haveHttpHeader('Content-Type', 'application/json');
+        $I->sendPOST('/event', [
+            'type' => 'goal',
+            'player' => 'John Doe',
+            'minute' => 23,
+            'second' => 34,
+            'team_id' => 'team_a',
+            'match_id' => 'match_1',
+            'assisting_player' => 'John Smith',
+        ]);
+
+        $I->seeResponseCodeIs(201);
+        $I->seeResponseIsJson();
+        $I->seeResponseContainsJson([
+            'status' => 'success',
+            'message' => 'Event saved successfully'
+        ]);
+        $I->seeResponseJsonMatchesJsonPath('$.event.type', 'foul');
+    }
+
+    public function testGoalEventWithoutRequiredFields(ApiTester $I)
+    {
+        $I->haveHttpHeader('Content-Type', 'application/json');
+        $I->sendPOST('/event', [
+            'type' => 'goal',
+            'player' => 'John Doe',
+//            'minute' => 23,
+//            'second' => 34,
+//            'team_id' => 'team_a',
+//            'match_id' => 'match_1',
+//            'assisting_player' => 'John Smith',
+        ]);
+
+        $I->seeResponseCodeIs(400);
+        $I->seeResponseIsJson();
+        $I->seeResponseContainsJson([
+            'error' => 'Fields player, minute, second, team_id, match_id, assisting_player are required for this event'
         ]);
     }
 }

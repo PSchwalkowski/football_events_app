@@ -5,6 +5,7 @@ namespace Tests;
 use App\EventHandler;
 use App\FileStorage;
 use App\StatisticsManager;
+use InvalidArgumentException;
 use PHPUnit\Framework\Attributes\TestWith;
 use PHPUnit\Framework\TestCase;
 
@@ -84,9 +85,9 @@ class EventHandlerTest extends TestCase
     #[TestWith(['assisting_player'])]
     public function testHandleGoalEventWithoutRequiredFields(string $fieldToHide): void
     {
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage(
-            'Fields player, minute, second, team_id, match_id, assisting_player required for goal events'
+            'Fields player, minute, second, team_id, match_id, assisting_player are required for this event'
         );
 
         $statisticsManager = new StatisticsManager($this->testStatsFile);
@@ -109,7 +110,7 @@ class EventHandlerTest extends TestCase
     
     public function testHandleEventWithoutType(): void
     {
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Event type is required');
         
         $handler = new EventHandler($this->testFile);
@@ -199,9 +200,9 @@ class EventHandlerTest extends TestCase
     
     public function testHandleFoulEventWithoutRequiredFields(): void
     {
-        $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage('match_id and team_id are required for foul events');
-        
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Fields match_id, team_id are required for this event');
+
         $statisticsManager = new StatisticsManager($this->testStatsFile);
         $handler = new EventHandler($this->testFile, $statisticsManager);
         
