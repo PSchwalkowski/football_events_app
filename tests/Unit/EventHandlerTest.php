@@ -50,6 +50,32 @@ class EventHandlerTest extends TestCase
         $this->assertArrayHasKey('timestamp', $result['event']);
     }
 
+    public function testHandleGoalEventUpdatesStatistics(): void
+    {
+        $statisticsManager = new StatisticsManager($this->testStatsFile);
+        $handler = new EventHandler($this->testFile, $statisticsManager);
+
+        $eventData = [
+            'type' => 'goal',
+            'player' => 'John Doe',
+            'minute' => 23,
+            'second' => 34,
+            'team_id' => 'team_a',
+            'match_id' => 'match_1',
+            'assisting_player' => 'John Smith',
+        ];
+
+        $result = $handler->handleEvent($eventData);
+
+        $this->assertEquals('success', $result['status']);
+        $this->assertEquals('goal', $result['event']['type']);
+        $this->assertArrayHasKey('timestamp', $result['event']);
+
+        $teamStats = $statisticsManager->getTeamStatistics('match_1', 'team_a');
+        $this->assertArrayHasKey('goals', $teamStats);
+        $this->assertEquals(1, $teamStats['goals']);
+    }
+
     #[TestWith(['player'])]
     #[TestWith(['minute'])]
     #[TestWith(['second'])]
@@ -59,7 +85,9 @@ class EventHandlerTest extends TestCase
     public function testHandleGoalEventWithoutRequiredFields(string $fieldToHide): void
     {
         $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage('Fields player, minute, second, team_id, match_id, assisting_player required for goal events');
+        $this->expectExceptionMessage(
+            'Fields player, minute, second, team_id, match_id, assisting_player required for goal events'
+        );
 
         $statisticsManager = new StatisticsManager($this->testStatsFile);
         $handler = new EventHandler($this->testFile, $statisticsManager);

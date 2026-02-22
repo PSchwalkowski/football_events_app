@@ -64,6 +64,12 @@ class EventHandler
                     implode(', ', $requiredFields)
                 ));
             }
+
+            $this->statisticsManager->updateTeamStatistics(
+                $data['match_id'],
+                $data['team_id'],
+                'goals',
+            );
         }
         
         return [
