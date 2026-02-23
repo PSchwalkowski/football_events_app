@@ -62,7 +62,7 @@ if ($method === 'POST' && $path === '/event') {
         echo json_encode(['error' => $e->getMessage()]);
     }
 }  elseif ($method === 'GET' && $path === '/events') {
-    $handler = new EventHandler(__DIR__ . '/../storage/events.json');
+    $handler = new EventHandler(__DIR__ . '/../storage/events.txt');
 
     $filters = [];
     if (isset($_GET['type'])) {
