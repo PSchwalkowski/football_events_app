@@ -118,6 +118,16 @@ class EventHandlerTest extends TestCase
         
         $handler->handleEvent([]);
     }
+
+    public function testHandleEventWithInvalidType(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Invalid event type');
+
+        $handler = new EventHandler($this->testFile);
+
+        $handler->handleEvent(['type' => 'invalid_type']);
+    }
     
     public function testEventIsSavedToFile(): void
     {

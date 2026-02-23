@@ -71,6 +71,10 @@ class EventHandler
     {
         $this->validate($data, ['type']);
 
+        if (!in_array($data['type'], ['foul', 'goal'])) {
+            throw new InvalidArgumentException('Invalid event type');
+        }
+
         switch ($data['type']) {
             case 'foul':
                 $this->validate($data, [
@@ -104,6 +108,7 @@ class EventHandler
     {
         $events = $this->storage->getAll();
 
+        // TODO: This is not the best place for filtering results
         if ($type !== null) {
             $events = array_filter($events, function ($event) use ($type) {
                 return $event['type'] === $type;
