@@ -98,4 +98,9 @@ class EventHandler
                 break;
         }
     }
+
+    public function getEvents(): array
+    {
+        return $this->storage->getAll();
+    }
 }

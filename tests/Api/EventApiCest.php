@@ -122,4 +122,40 @@ class EventApiCest
             'error' => 'Fields player, minute, second, team_id, match_id, assisting_player are required for this event'
         ]);
     }
+
+    public function testGetAllEvents(ApiTester $I): void
+    {
+        $I->haveHttpHeader('Content-Type', 'application/json');
+
+        $event = [
+            'type' => 'goal',
+            'player' => 'John Doe',
+            'minute' => 23,
+            'second' => 34,
+            'team_id' => 'team_a',
+            'match_id' => 'match_1',
+            'assisting_player' => 'John Smith',
+        ];
+
+        $I->sendPOST('/event', $event);
+
+        $I->sendGET('/events');
+
+        $I->seeResponseCodeIs(200);
+        $I->seeResponseIsJson();
+        $I->seeResponseContainsJson([
+            'events' => [
+                [
+                    'type' => 'goal',
+//                    'timestamp' => 1771832788,
+                    'data' => $event
+                ]
+            ],
+        ]);
+    }
+
+    public function testGetFilteredEvents(ApiTester $I): void
+    {
+        $I->markTestSkipped('TODO');
+    }
 }
