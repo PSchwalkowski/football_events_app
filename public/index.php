@@ -64,12 +64,12 @@ if ($method === 'POST' && $path === '/event') {
 }  elseif ($method === 'GET' && $path === '/events') {
     $handler = new EventHandler(__DIR__ . '/../storage/events.txt');
 
-    $filters = [];
-    if (isset($_GET['type'])) {
-        $filters['type'] = $_GET['type'];
+    $type = null;
+    if (isset($_GET['type']) && in_array($_GET['type'], ['foul', 'goal'])) {
+        $type = $_GET['type'];
     }
 
-    $result = $handler->getEvents($filters);
+    $result = $handler->getEvents($type);
 
     echo json_encode($result);
 } else {

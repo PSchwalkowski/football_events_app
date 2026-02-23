@@ -99,15 +99,20 @@ class EventHandler
         }
     }
 
-    public function getEvents(array $filters = []): array
+    // TODO: Add more filters
+    public function getEvents(?string $type = null): array
     {
         $events = $this->storage->getAll();
 
-
+        if ($type !== null) {
+            $events = array_filter($events, function ($event) use ($type) {
+                return $event['type'] === $type;
+            });
+        }
 
         return [
             'status' => 'success',
-            'events' => $events
+            'events' => array_values($events),
         ];
     }
 }

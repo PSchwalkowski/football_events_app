@@ -237,7 +237,7 @@ class EventHandlerTest extends TestCase
         $statisticsManager = new StatisticsManager($this->testStatsFile);
         $handler = new EventHandler($this->testFile, $statisticsManager);
 
-        $eventData = [
+        $eventData1 = [
             'type' => 'foul',
             'player' => 'William Saliba',
             'affected_player' => 'John Doe',
@@ -246,8 +246,67 @@ class EventHandlerTest extends TestCase
             'minute' => 15,
             'second' => 34
         ];
-        $handler->handleEvent($eventData);
+        $eventData2 = [
+            'type' => 'goal',
+            'player' => 'Jane Smith',
+            'minute' => 23,
+            'second' => 34,
+            'team_id' => 'team_a',
+            'match_id' => 'match_1',
+            'assisting_player' => 'John Smith',
+        ];
+        $handler->handleEvent($eventData1);
+        $handler->handleEvent($eventData2);
         $response = $handler->getEvents();
+
+        self::assertEquals('success', $response['status']);
+        self::assertArrayHasKey('timestamp', $response['events'][0]);
+
+        foreach ($response['events'] as $id => $event) {
+            unset($response['events'][$id]['timestamp']);
+        }
+
+        self::assertEquals(
+            [
+                [
+                    'type' => 'foul',
+                    'data' => $eventData1,
+                ],
+                [
+                    'type' => 'goal',
+                    'data' => $eventData2,
+                ],
+            ],
+            $response['events'],
+        );
+    }
+
+    public function testGetFilteredEvents(): void
+    {
+        $statisticsManager = new StatisticsManager($this->testStatsFile);
+        $handler = new EventHandler($this->testFile, $statisticsManager);
+
+        $eventData1 = [
+            'type' => 'foul',
+            'player' => 'William Saliba',
+            'affected_player' => 'John Doe',
+            'team_id' => 'team_a',
+            'match_id' => 'match_1',
+            'minute' => 15,
+            'second' => 34
+        ];
+        $eventData2 = [
+            'type' => 'goal',
+            'player' => 'Jane Smith',
+            'minute' => 23,
+            'second' => 34,
+            'team_id' => 'team_a',
+            'match_id' => 'match_1',
+            'assisting_player' => 'John Smith',
+        ];
+        $handler->handleEvent($eventData1);
+        $handler->handleEvent($eventData2);
+        $response = $handler->getEvents('foul');
 
         self::assertEquals('success', $response['status']);
         self::assertArrayHasKey('timestamp', $response['events'][0]);
@@ -259,7 +318,7 @@ class EventHandlerTest extends TestCase
                 [
                     'type' => 'foul',
 //                    'timestamp' => 1771832788,
-                    'data' => $eventData,
+                    'data' => $eventData1,
                 ]
             ],
             $response['events'],

@@ -127,7 +127,7 @@ class EventApiCest
     {
         $I->haveHttpHeader('Content-Type', 'application/json');
 
-        $event = [
+        $goalEvent = [
             'type' => 'goal',
             'player' => 'John Doe',
             'minute' => 23,
@@ -136,8 +136,18 @@ class EventApiCest
             'match_id' => 'match_1',
             'assisting_player' => 'John Smith',
         ];
+        $foulEvent = [
+            'type' => 'foul',
+            'player' => 'William Saliba',
+            'affected_player' => 'John Doe',
+            'team_id' => 'arsenal',
+            'match_id' => 'm1',
+            'minute' => 45,
+            'second' => 34,
+        ];
 
-        $I->sendPOST('/event', $event);
+        $I->sendPOST('/event', $goalEvent);
+        $I->sendPOST('/event', $foulEvent);
 
         $I->sendGET('/events');
 
@@ -149,14 +159,55 @@ class EventApiCest
                 [
                     'type' => 'goal',
 //                    'timestamp' => 1771832788,
-                    'data' => $event
-                ]
+                    'data' => $goalEvent,
+                ],
+                [
+                    'type' => 'foul',
+//                    'timestamp' => 1771832788,
+                    'data' => $foulEvent,
+                ],
             ],
         ]);
     }
 
     public function testGetFilteredEvents(ApiTester $I): void
     {
-        $I->markTestSkipped('TODO');
+        $I->haveHttpHeader('Content-Type', 'application/json');
+
+        $goalEvent = [
+            'type' => 'goal',
+            'player' => 'John Doe',
+            'minute' => 23,
+            'second' => 34,
+            'team_id' => 'team_a',
+            'match_id' => 'match_1',
+            'assisting_player' => 'John Smith',
+        ];
+        $I->sendPOST('/event', [
+            'type' => 'foul',
+            'player' => 'William Saliba',
+            'affected_player' => 'John Doe',
+            'team_id' => 'arsenal',
+            'match_id' => 'm1',
+            'minute' => 45,
+            'second' => 34,
+        ]);
+
+        $I->sendPOST('/event', $goalEvent);
+
+        $I->sendGET('/events', ['type' => 'goal']);
+
+        $I->seeResponseCodeIs(200);
+        $I->seeResponseIsJson();
+        $I->seeResponseContainsJson([
+            'status' => 'success',
+            'events' => [
+                [
+                    'type' => 'goal',
+//                    'timestamp' => 1771832788,
+                    'data' => $goalEvent,
+                ]
+            ],
+        ]);
     }
 }
