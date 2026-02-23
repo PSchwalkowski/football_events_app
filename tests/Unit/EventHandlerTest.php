@@ -231,4 +231,38 @@ class EventHandlerTest extends TestCase
         
         $handler->handleEvent($eventData);
     }
+
+    public function testGetAllEvents(): void
+    {
+        $statisticsManager = new StatisticsManager($this->testStatsFile);
+        $handler = new EventHandler($this->testFile, $statisticsManager);
+
+        $eventData = [
+            'type' => 'foul',
+            'player' => 'William Saliba',
+            'affected_player' => 'John Doe',
+            'team_id' => 'team_a',
+            'match_id' => 'match_1',
+            'minute' => 15,
+            'second' => 34
+        ];
+        $handler->handleEvent($eventData);
+        $response = $handler->getEvents();
+
+        self::assertEquals('success', $response['status']);
+        self::assertArrayHasKey('timestamp', $response['events'][0]);
+
+        unset($response['events'][0]['timestamp']);
+
+        self::assertEquals(
+            [
+                [
+                    'type' => 'foul',
+//                    'timestamp' => 1771832788,
+                    'data' => $eventData,
+                ]
+            ],
+            $response['events'],
+        );
+    }
 }

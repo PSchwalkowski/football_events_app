@@ -62,12 +62,16 @@ if ($method === 'POST' && $path === '/event') {
         echo json_encode(['error' => $e->getMessage()]);
     }
 }  elseif ($method === 'GET' && $path === '/events') {
-    $handler = new EventHandler(__DIR__ . '/../storage/events.txt');
-    $events = $handler->getEvents();
+    $handler = new EventHandler(__DIR__ . '/../storage/events.json');
 
-    echo json_encode([
-        'events' => $events,
-    ]);
+    $filters = [];
+    if (isset($_GET['type'])) {
+        $filters['type'] = $_GET['type'];
+    }
+
+    $result = $handler->getEvents($filters);
+
+    echo json_encode($result);
 } else {
     http_response_code(404);
     echo json_encode(['error' => 'Not found']);

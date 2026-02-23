@@ -144,6 +144,7 @@ class EventApiCest
         $I->seeResponseCodeIs(200);
         $I->seeResponseIsJson();
         $I->seeResponseContainsJson([
+            'status' => 'success',
             'events' => [
                 [
                     'type' => 'goal',

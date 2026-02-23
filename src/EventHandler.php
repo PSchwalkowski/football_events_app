@@ -99,8 +99,15 @@ class EventHandler
         }
     }
 
-    public function getEvents(): array
+    public function getEvents(array $filters = []): array
     {
-        return $this->storage->getAll();
+        $events = $this->storage->getAll();
+
+
+
+        return [
+            'status' => 'success',
+            'events' => $events
+        ];
     }
 }
