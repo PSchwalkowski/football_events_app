@@ -29,13 +29,13 @@ class EventHandler
         
         // Update statistics for foul events
         if ($data['type'] === 'foul') {
-            $this->statisticsManager->updateTeamStatistics(
+            $this->statisticsManager->addTeamStatistics(
                 $data['match_id'],
                 $data['team_id'],
                 'fouls'
             );
         } elseif ($data['type'] === 'goal') {
-            $this->statisticsManager->updateTeamStatistics(
+            $this->statisticsManager->addTeamStatistics(
                 $data['match_id'],
                 $data['team_id'],
                 'goals',

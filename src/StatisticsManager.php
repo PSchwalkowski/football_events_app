@@ -18,25 +18,16 @@ class StatisticsManager
         }
     }
     
-    public function updateTeamStatistics(string $matchId, string $teamId, string $statType, int $value = 1): void
+    public function addTeamStatistics(string $matchId, string $teamId, string $statType, int $value = 1): void
     {
-        $stats = $this->getStatistics();
-        
-        if (!isset($stats[$matchId])) {
-            $stats[$matchId] = [];
-        }
-        
-        if (!isset($stats[$matchId][$teamId])) {
-            $stats[$matchId][$teamId] = [];
-        }
-        
-        if (!isset($stats[$matchId][$teamId][$statType])) {
-            $stats[$matchId][$teamId][$statType] = 0;
-        }
-        
-        $stats[$matchId][$teamId][$statType] += $value;
-        
-        $this->saveStatistics($stats);
+        $stats = [
+            'match_id' => $matchId,
+            'team_id' => $teamId,
+            'stat_type' => $statType,
+            'value' => $value,
+        ];
+
+        file_put_contents($this->statsFile, json_encode($stats) . PHP_EOL, FILE_APPEND | LOCK_EX);
     }
     
     public function getTeamStatistics(string $matchId, string $teamId): array
@@ -50,19 +41,27 @@ class StatisticsManager
         $stats = $this->getStatistics();
         return $stats[$matchId] ?? [];
     }
-    
+
     private function getStatistics(): array
     {
         if (!file_exists($this->statsFile)) {
             return [];
         }
-        
-        $content = file_get_contents($this->statsFile);
-        return json_decode($content, true) ?? [];
-    }
-    
-    private function saveStatistics(array $stats): void
-    {
-        file_put_contents($this->statsFile, json_encode($stats, JSON_PRETTY_PRINT), LOCK_EX);
+
+        $aggregated = [];
+        $handle = fopen($this->statsFile, 'r');
+
+        while (($line = fgets($handle)) !== false) {
+            $entry = json_decode(trim($line), true);
+            if (!$entry) {
+                continue;
+            }
+
+            $currentValue = $aggregated[$entry['match_id']][$entry['team_id']][$entry['stat_type']] ?? 0;
+            $aggregated[$entry['match_id']][$entry['team_id']][$entry['stat_type']] = $currentValue + $entry['value'];
+        }
+
+        fclose($handle);
+        return $aggregated;
     }
 }
