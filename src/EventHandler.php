@@ -26,7 +26,7 @@ class EventHandler
         ];
         
         $this->storage->save($event);
-        $this->updateStatistics($event);
+        $this->updateStatistics($data);
         
         return [
             'status' => 'success',
@@ -109,13 +109,13 @@ class EventHandler
     }
 
     // TODO: This should be processed async via queues
-    private function updateStatistics(array $event): void
+    private function updateStatistics(array $data): void
     {
-        $eventType = match($event['type']) {
+        $eventType = match($data['type']) {
             'goal' => 'goals',
             'foul' => 'fouls',
         };
 
-        $this->statisticsManager->addTeamStatistics($event['match_id'], $event['team_id'], $eventType);
+        $this->statisticsManager->addTeamStatistics($data['match_id'], $data['team_id'], $eventType);
     }
 }
