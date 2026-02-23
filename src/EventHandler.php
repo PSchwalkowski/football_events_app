@@ -26,26 +26,12 @@ class EventHandler
         ];
         
         $this->storage->save($event);
-        
-        // Update statistics for foul events
-        if ($data['type'] === 'foul') {
-            $this->statisticsManager->addTeamStatistics(
-                $data['match_id'],
-                $data['team_id'],
-                'fouls'
-            );
-        } elseif ($data['type'] === 'goal') {
-            $this->statisticsManager->addTeamStatistics(
-                $data['match_id'],
-                $data['team_id'],
-                'goals',
-            );
-        }
+        $this->updateStatistics($event);
         
         return [
             'status' => 'success',
             'message' => 'Event saved successfully',
-            'event' => $event
+            'event' => $event,
         ];
     }
 
@@ -104,6 +90,7 @@ class EventHandler
     }
 
     // TODO: Add more filters
+    // TODO: Use some kind of pagination
     public function getEvents(?string $type = null): array
     {
         $events = $this->storage->getAll();
@@ -119,5 +106,16 @@ class EventHandler
             'status' => 'success',
             'events' => array_values($events),
         ];
+    }
+
+    // TODO: This should be processed async via queues
+    private function updateStatistics(array $event): void
+    {
+        $eventType = match($event['type']) {
+            'goal' => 'goals',
+            'foul' => 'fouls',
+        };
+
+        $this->statisticsManager->addTeamStatistics($event['match_id'], $event['team_id'], $eventType);
     }
 }
