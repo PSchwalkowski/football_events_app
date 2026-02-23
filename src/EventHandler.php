@@ -8,11 +8,24 @@ class EventHandler
 {
     private FileStorage $storage;
     private StatisticsManager $statisticsManager;
-    
-    public function __construct(string $storagePath, ?StatisticsManager $statisticsManager = null)
+    private SubscriptionsManager $subscriptionsManager;
+
+    public function __construct(
+        string $storagePath,
+        ?StatisticsManager $statisticsManager = null,
+        ?SubscriptionsManager $subscriptionsManager = null,
+    )
     {
         $this->storage = new FileStorage($storagePath);
         $this->statisticsManager = $statisticsManager ?? new StatisticsManager(__DIR__ . '/../storage/statistics.txt');
+
+        if ($subscriptionsManager) {
+            $this->subscriptionsManager = $subscriptionsManager;
+        } else {
+            $this->subscriptionsManager = new SubscriptionsManager(
+                new FileStorage(__DIR__ . '/../storage/subscriptions.txt')
+            );
+        }
     }
     
     public function handleEvent(array $data): array
@@ -27,6 +40,8 @@ class EventHandler
         
         $this->storage->save($event);
         $this->updateStatistics($data);
+
+        $this->subscriptionsManager->notifyAboutEvent($event);
         
         return [
             'status' => 'success',

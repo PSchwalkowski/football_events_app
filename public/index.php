@@ -3,7 +3,9 @@
 require_once __DIR__ . '/../vendor/autoload.php';
 
 use App\EventHandler;
+use App\FileStorage;
 use App\StatisticsManager;
+use App\SubscriptionsManager;
 
 header('Content-Type: application/json');
 
@@ -72,6 +74,25 @@ if ($method === 'POST' && $path === '/event') {
     $result = $handler->getEvents($type);
 
     echo json_encode($result);
+} elseif ($method === 'POST' && $path === '/subscribe') {
+    $input = file_get_contents('php://input');
+    $data = json_decode($input, true);
+
+    if (json_last_error() !== JSON_ERROR_NONE) {
+        http_response_code(400);
+        echo json_encode(['error' => 'Invalid JSON']);
+        exit;
+    }
+
+    $subscriptionManager = new SubscriptionsManager(new FileStorage(__DIR__ . '/../storage/subscriptions.txt'));
+
+    try {
+        $subscriptionManager->subscribe((string) $data['url'], (string) $data['match_id']);
+        http_response_code(201);
+    } catch (Exception $e) {
+        http_response_code(400);
+        echo json_encode(['error' => $e->getMessage()]);
+    }
 } else {
     http_response_code(404);
     echo json_encode(['error' => 'Not found']);
